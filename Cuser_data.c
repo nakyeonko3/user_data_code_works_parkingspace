@@ -158,7 +158,6 @@ void register_data(const char *filename, const char *Name, const char *CarType, 
 
     UserData userData;
 
-    // 차량번호 형식 검증
 
     strncpy(userData.Name, Name, sizeof(userData.Name));
     strncpy(userData.CarType, CarType, sizeof(userData.CarType));
