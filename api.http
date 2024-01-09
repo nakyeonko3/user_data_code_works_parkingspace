@@ -1,0 +1,44 @@
+###
+POST http://localhost:5000//UserInfo HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "EventID":"1",
+    "Name":"김나성",
+    "CarType":"value2", 
+    "CarNumber":"15누-8762"
+}
+
+###
+POST http://localhost:5000//UserInfo HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "EventID":"2",
+    "ParkingSpace":25, 
+    "CarNumber":"15누-8762"
+}
+
+###
+POST http://localhost:5000//UserInfo HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "EventID":"1",
+    "Name":"고낙연",
+    "CarType":"typeS2", 
+    "CarNumber":"225-kim2"
+}
+
+###
+
+POST http://localhost:5000//UserInfo HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "EventID":"2",
+    "ParkingSpace":58, 
+    "CarNumber":"225-kim2"
+}
+
+###
