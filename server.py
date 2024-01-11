@@ -2,6 +2,7 @@ import subprocess
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import math
+import json
 import re
 CUSER_DATA_FILE_PATH = "./Cuser_data"
 # CUSER_DATA_FILE_PATH = "/home/tjchoi/Project/Cuser_data"
@@ -58,15 +59,12 @@ def handle_user():
 
     # 1)차량 번호 검색
     search_output = search_user_by_carNumber(Data["CarNumber"])
-
     # 차량 번호 검색 중 에러 발생
     if search_output == 1: 
         return jsonify({"message": "서버 오류 발생", "data": search_output})
-    
     # 2)검색 결과를 전송
     if search_output: 
         return jsonify({"message": "검색 결과 출력", "data": search_output}), 200 
-
     # 3)유저 데이터 등록 
     try:
         subprocess.run(
@@ -78,8 +76,8 @@ def handle_user():
         return jsonify({
             "message": f" 데이터 등록 완료: Name: {Data['Name']}, CarType: {Data['CarType']}, CarNumber: {Data['CarNumber']}"
         }), 200
-    except subprocess.CalledProcessError as register_error:    # retruncode가 0이 아닐시, 에러 메시지 전송
-        return jsonify({"message": "차량 번호 검색중 서버 오류 발생", "error": register_error.stderr}), 500
+    except subprocess.CalledProcessError as search_error:    # retruncode가 0이 아닐시, 에러 메시지 전송
+        return jsonify({"message": "차량 번호 검색중 서버 오류 발생", "error": search_error.stderr}), 500
     except Exception as e:
         return jsonify({"message": "유저 데이터 등록 시도중 서버 오류 발생", "error": str(e)}), 500
 
@@ -93,33 +91,30 @@ def handle_parking_space():
     if EventID != "2":
         return jsonify({"message": "올바르지 않은 EventID입니다."}), 400
     
-    # 주차번호가 없을 때 웹에 에러 메시지를 전송
-    if "ParkingSpace" not in Data:
-        return jsonify({"message": "주차번호(ParkingSpace)이(가) 입력되지 않았습니다."}), 400
-
-    # 차량번호가 없을 때 웹에 에러 메시지를 전송
-    if "CarNumber" not in Data:
-        return jsonify({"message": "차량번호(CarNumber)이(가) 입력되지 않았습니다"}), 400
-
+    # 차량번호, 주차번호 중 하나라도 없을 때 웹에 에러 메시지를 전송
+    required_fields = ["CarNumber", "ParkingSpace"]
+    for field in required_fields:
+        if field not in Data:
+            return jsonify({"message": f"{field}가 입력되지 않았습니다."}), 400
+    
     # 허용된 문자(숫자, 한글, 영어)외의 적절치 않은 문자열(!@#$%^*) 입력시 에러 메시지 전송 
     if math.isnan( Data["ParkingSpace"]):
         return jsonify({"message": "적절치 않은 문자열(!-#%&*)를 입력하지 마시오"}), 400
     
-    if int(Data["ParkingSpace"]) > 22:  # 주차 가능한 공간이 22대로 제한된 경우
+    # 주차 가능한 공간이 22대로 제한된 경우
+    if int(Data["ParkingSpace"]) > 22:  
         return jsonify({"message": "주차장이 가득 찼습니다. 더 이상 주차할 수 없습니다."}), 400
-    
 
     # 차량 번호 검색
     search_output = search_user_by_carNumber(Data["CarNumber"])
-
+    
     # 차량 번호 검색 중 에러 발생
     if search_output == 1:
         return jsonify({"message": "서버 오류 발생", "data": search_output}), 500
     
-    # 등록되지 않은 차량번호를 삭제하려고 했을 경우, 에러 메시지 전송
+    # 등록되지 않은 유저의 주차번호를 업데이트하려고 했을 경우, 에러 메시지 전송
     if not search_output:
-        return jsonify({"message": f"등록되지 않은 차량번호 {Data['CarNumber']}", "data": search_output}), 400
-
+        return jsonify({"message": f"등록되지 않은 차량번호'{Data['CarNumber']}'", "data": search_output}), 400
     
     # 주차번호 등록
     try:
@@ -130,10 +125,10 @@ def handle_parking_space():
                 check=True
             )
         return jsonify( {
-            "message": f"주차장 번호 업데이트 성공, 차량번호: {Data['CarNumber']}, 주차공간: {Data['ParkingSpace']}"
+            "message": f"주차번호 업데이트 성공, 차량번호: {Data['CarNumber']}, 주차공간: {Data['ParkingSpace']}"
         }), 200
-    except subprocess.CalledProcessError as pregister_result:     # retruncode가 0이 아닐시에도, 에러 메시지 전송
-        return jsonify({"message": "주차 번호 업데이트 중 서버 오류 발생, retruncode not 0", "error": pregister_result.stderr}), 500
+    except subprocess.CalledProcessError as pregister_error:     # retruncode가 0이 아닐시에도, 에러 메시지 전송
+        return jsonify({"message": "주차번호 업데이트 중 서버 오류 발생", "error": pregister_error.stderr}), 500
     except Exception as e:
         return jsonify({"message": "서버 오류 발생", "error": str(e)}), 500
     
@@ -146,10 +141,8 @@ def handle_turn_off():
 
     if EventID != "4":
         return jsonify({"message": "올바르지 않은 EventID입니다."}), 400
-    
     if "CarNumber" not in Data:
         return jsonify({"message": "차량번호(CarNumbe)가 입력되지 않았습니다.", "error": str(e)}), 500
-
     try:
         # C 언어 프로그램을 호출하여 해당 차량번호 데이터 삭제
         delete_result = subprocess.run(
@@ -159,8 +152,8 @@ def handle_turn_off():
             check=True
         )
         return jsonify({"message": f"차량번호 {Data['CarNumber']}에 해당하는 데이터 삭제 성공"}), 200
-    except subprocess.CalledProcessError as delete_result:     # retruncode가 0이 아닐시에도, 에러 메시지 전송
-        return jsonify({"message": f"차량번호 {Data['CarNumber']} 삭제중 서버 오류 발생, retruncode not 0", "error": delete_result.stderr}), 500
+    except subprocess.CalledProcessError as delete_error:     # retruncode가 0이 아닐시에도, 에러 메시지 전송
+        return jsonify({"message": "삭제중 서버 오류 발생, retruncode not 0", "error": delete_error.stderr}), 500
     except Exception as e:
         return jsonify({"message": "데이터 삭제 중 서버 오류 발생", "error": str(e)}), 500
 
@@ -168,23 +161,20 @@ def handle_turn_off():
 # "/get-json-data" 엔드포인트에 대한 GET 메소드 핸들러 함수 정의
 @app.route("/get-json-data", methods=["GET"])
 def get_json_data():
-
     EventID = request.args.get("EventID")  # "EventID" 쿼리 매개변수 값을 가져옴
-    
-    # 클라이언트로부터 받은 EventID 출력
-    print(f"Received EventID from client: {EventID}")
-    
-    if EventID == "3":  # "EventID"가 "3"일 경우
-        result = subprocess.run([RMAP_DATA_FILE_PATH], capture_output=True, text=True)
-        if result.returncode == 0:
-            print("returncode: ", result.returncode)
-            json_data = result.stdout  # 서브프로세스 실행 결과에서 JSON 데이터를 가져옴
-            print("Command Output: ", result.stdout)
-            return jsonify(json_data)  # JSON 데이터를 응답으로 반환
-        else:
-            return jsonify({"message": "데이터가 없습니다."}), 404  # 클라이언트가 요청한 리소스(파일, 데이터, 페이지)를 서버에서 찾을 수 없을 경우
-    else:
-        return jsonify({"message": "잘못된 EventID입니다."}), 404  # 클라이언트가 요청한 리소스(파일, 데이터, 페이지)를 서버에서 찾을 수 없을 경우
+     
+    if EventID != "3": # "EventID"가 "3"이 아닐 경우 
+        return jsonify({"message":"올바르지 않은 EventID입니다."})
+
+    try:
+        map_data = subprocess.run([RMAP_DATA_FILE_PATH], capture_output=True, text=True, check=True)
+        map_dict = json.loads(map_data.stdout)
+        return jsonify(map_dict)
+    except subprocess.CalledProcessError as get_json_error:
+        return jsonify({"message": "map데이터 읽는중 서버 오류 발생", "error": delete_error.stderr}), 500
+    except Exception as e:
+        return jsonify({"message": "서버 오류 발생", "error": str(e)}), 500
+        
 
 # 메인 실행 부분
 if __name__ == "__main__":

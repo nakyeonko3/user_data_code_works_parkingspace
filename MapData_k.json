@@ -1,0 +1,202 @@
+{
+  "parkingSpace": [
+      {
+          "ParkingSpaceID": "1",
+          "BottomLeftVertex": [100, 600],
+          "BottomRightVertex": [200, 600],
+          "TopRightVertex": [200, 700],
+          "TopLeftVertex": [100, 700],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "2",
+          "BottomLeftVertex": [200, 600],
+          "BottomRightVertex": [300, 600],
+          "TopRightVertex": [300, 700],
+          "TopLeftVertex": [200, 700],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "3",
+          "BottomLeftVertex": [300, 600],
+          "BottomRightVertex": [400, 600],
+          "TopRightVertex": [400, 700],
+          "TopLeftVertex": [300, 700],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "4",
+          "BottomLeftVertex": [400, 600],
+          "BottomRightVertex": [500, 600],
+          "TopRightVertex": [500, 700],
+          "TopLeftVertex": [400, 700],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "5",
+          "BottomLeftVertex": [500, 600],
+          "BottomRightVertex": [600, 600],
+          "TopRightVertex": [600, 700],
+          "TopLeftVertex": [500, 700],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "6",
+          "BottomLeftVertex": [600, 600],
+          "BottomRightVertex": [700, 600],
+          "TopRightVertex": [700, 700],
+          "TopLeftVertex": [600, 700],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "7",
+          "BottomLeftVertex": [700, 600],
+          "BottomRightVertex": [800, 600],
+          "TopRightVertex": [800, 700],
+          "TopLeftVertex": [700, 700],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "8",
+          "BottomLeftVertex": [800, 600],
+          "BottomRightVertex": [900, 600],
+          "TopRightVertex": [900, 700],
+          "TopLeftVertex": [800, 700],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "9",
+          "BottomLeftVertex": [250, 400],
+          "BottomRightVertex": [350, 400],
+          "TopRightVertex": [350, 500],
+          "TopLeftVertex": [250, 500],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "10",
+          "BottomLeftVertex": [250, 300],
+          "BottomRightVertex": [350, 300],
+          "TopRightVertex": [350, 400],
+          "TopLeftVertex": [250, 400],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "11",
+          "BottomLeftVertex": [250, 200],
+          "BottomRightVertex": [350, 200],
+          "TopRightVertex": [350, 300],
+          "TopLeftVertex": [250, 300],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "12",
+          "BottomLeftVertex": [650, 400],
+          "BottomRightVertex": [750, 400],
+          "TopRightVertex": [750, 500],
+          "TopLeftVertex": [650, 500],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "13",
+          "BottomLeftVertex": [650, 300],
+          "BottomRightVertex": [750, 300],
+          "TopRightVertex": [750, 400],
+          "TopLeftVertex": [650, 400],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "14",
+          "BottomLeftVertex": [650, 200],
+          "BottomRightVertex": [750, 200],
+          "TopRightVertex": [750, 300],
+          "TopLeftVertex": [650, 300],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "15",
+          "BottomLeftVertex": [100, 0],
+          "BottomRightVertex": [200, 0],
+          "TopRightVertex": [200, 100],
+          "TopLeftVertex": [100, 100],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "16",
+          "BottomLeftVertex": [200, 0],
+          "BottomRightVertex": [300, 0],
+          "TopRightVertex": [300, 100],
+          "TopLeftVertex": [200, 100],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "17",
+          "BottomLeftVertex": [300, 0],
+          "BottomRightVertex": [400, 0],
+          "TopRightVertex": [400, 100],
+          "TopLeftVertex": [300, 100],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "18",
+          "BottomLeftVertex": [400, 0],
+          "BottomRightVertex": [500, 0],
+          "TopRightVertex": [500, 100],
+          "TopLeftVertex": [400, 100],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "19",
+          "BottomLeftVertex": [500, 0],
+          "BottomRightVertex": [600, 0],
+          "TopRightVertex": [600, 100],
+          "TopLeftVertex": [500, 100],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "20",
+          "BottomLeftVertex": [600, 0],
+          "BottomRightVertex": [700, 0],
+          "TopRightVertex": [700, 100],
+          "TopLeftVertex": [600, 100],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": false
+      },
+      {
+          "ParkingSpaceID": "21",
+          "BottomLeftVertex": [700, 0],
+          "BottomRightVertex": [800, 0],
+          "TopRightVertex": [800, 100],
+          "TopLeftVertex": [700, 100],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": true
+      },
+      {
+          "ParkingSpaceID": "22",
+          "BottomLeftVertex": [800, 0],
+          "BottomRightVertex": [900, 0],
+          "TopRightVertex": [900, 100],
+          "TopLeftVertex": [800, 100],
+          "IsParkingAvailable": true,
+          "IsHandicappedParkingSpace": true
+      }
+  ]
+}

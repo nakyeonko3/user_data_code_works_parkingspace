@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #define VERTEX_SIZE 2
 
-#define RMAPDATA_BIN_PATH "MAPDATA_PATH"
+#define RMAPDATA_BIN_PATH "./MapData.bin"
 // 파일의 메타데이터를 저장하는 구조체
 typedef struct
 {
