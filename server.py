@@ -6,6 +6,8 @@ import re
 CUSER_DATA_FILE_PATH = "./Cuser_data"
 # CUSER_DATA_FILE_PATH = "/home/tjchoi/Project/Cuser_data"
 
+RMAP_DATA_FILE_PATH = "./Rmap_data"
+# RMAP_DATA_FILE_PATH = "/home/tjchoi/Project/Rmap_data"
 
 
 app = Flask(__name__)
@@ -173,7 +175,7 @@ def get_json_data():
     print(f"Received EventID from client: {EventID}")
     
     if EventID == "3":  # "EventID"가 "3"일 경우
-        result = subprocess.run(["./Rmap_data"], capture_output=True, text=True, cwd="/home/tjchoi/Project")
+        result = subprocess.run([RMAP_DATA_FILE_PATH], capture_output=True, text=True)
         if result.returncode == 0:
             print("returncode: ", result.returncode)
             json_data = result.stdout  # 서브프로세스 실행 결과에서 JSON 데이터를 가져옴
