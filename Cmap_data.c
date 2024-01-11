@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#define MAPDATA_PATH  "./MapData.json";
+
 // 데이터 헤더를 위한 구조체 정의
 typedef struct
 {
@@ -273,6 +275,6 @@ int readAndProcessJSON(const char *jsonFileName)
 
 int main()
 {
-    const char *jsonFileName = "MapData.json";
+    const char *jsonFileName = MAPDATA_PATH;
     return readAndProcessJSON(jsonFileName);
 }

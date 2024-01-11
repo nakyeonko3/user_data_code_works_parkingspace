@@ -6,10 +6,14 @@
             "command": "/usr/bin/gcc",
             "args": [
                 "-fdiagnostics-color=always",
-                "-g",
+                "-g2",
                 "${file}",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",
+                "-l",
+                "json-c",
+                "-l",
+                "curl"
             ],
             "options": {
                 "cwd": "${fileDirname}"

@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #define VERTEX_SIZE 2
 
+#define RMAPDATA_BIN_PATH "MAPDATA_PATH"
 // 파일의 메타데이터를 저장하는 구조체
 typedef struct
 {
@@ -202,7 +203,7 @@ json_object *readBinaryFile(const char *filename)
 // 메인 함수
 int main()
 {
-    const char *binaryFileName = "MapData.bin";          // 바이너리 파일 이름
+    const char *binaryFileName = RMAPDATA_BIN_PATH;          // 바이너리 파일 이름
     json_object *jData = readBinaryFile(binaryFileName); // 바이너리 파일 읽기 및 JSON 변환
 
     if (jData != NULL)
