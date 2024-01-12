@@ -1,12 +1,10 @@
-#include <json-c/json.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 
-#define MAPDATA_PATH  "./MapData.json";
+#define MAP_DATA_JSON_PATH "./MapData.json"
 
-// 데이터 헤더를 위한 구조체 정의
 typedef struct
 {
     int TotalDataSize;
@@ -20,7 +18,6 @@ typedef struct
     int ParkingSpaceDataSize;
 } Header;
 
-// 데이터 오프셋을 위한 구조체 정의
 typedef struct
 {
     int OutlineDataOffset;
@@ -29,17 +26,15 @@ typedef struct
     int PathDataOffset;
 } Offset;
 
-// 외곽선 데이터를 위한 구조체 정의
 typedef struct
 {
     int StartVertex[2];
     int EndVertex[2];
 } Outline, MiddleLine;
 
-// 주차 공간 데이터를 위한 구조체 정의
 typedef struct
 {
-    char ParkingSpaceID[3];
+    char ParkingSpaceID[4];
     int BottomLeftVertex[2];
     int BottomRightVertex[2];
     int TopRightVertex[2];
@@ -48,60 +43,63 @@ typedef struct
     bool IsHandicappedParkingSpace;
 } ParkingSpace;
 
-// 경로 데이터를 위한 구조체 정의
 typedef struct
 {
-    char NodeID[1];
+    char NodeID[4];
     int StartVertex[2];
     int NodeVertex[2];
     int LinkedNodes[4];
     int LinkedIndex[4];
 } PathData;
 
-// JSON 파일을 읽고 처리하는 함수
 int readAndProcessJSON(const char *jsonFileName)
 {
-    Header header;
-    Offset offset;
+    Header header = {0};
+    Offset offset = {0};
     FILE *file;
-    json_object *jsonData, *outlineArray, *middleLineArray, *parkingSpaceArray, *pathArray;
-    json_object *outlineObj, *middleLineObj, *parkingSpaceObj, *pathDataObj;
-    json_object *nodeID, *startVertex, *endVertex, *vertex, *isParkingAvailable, *isHandicappedParkingSpace, *nodeVertex, *linkedNodes, *linkedIndex, *parkingSpaceId;
     int i;
 
-    // JSON 파일을 읽어서 json_object를 생성
-    jsonData = json_object_from_file(jsonFileName);
-    if (!jsonData)
+    FILE *jsonFile = fopen(jsonFileName, "r");
+    if (!jsonFile)
     {
-        printf("Failed to read JSON file.\n");
+        printf("Failed to open JSON file.\n");
         return -1;
     }
 
-    // JSON에서 데이터 배열을 가져와서 각각의 데이터 수를 저장
-    if (json_object_object_get_ex(jsonData, "outline", &outlineArray) &&
-        json_object_object_get_ex(jsonData, "middleLine", &middleLineArray) &&
-        json_object_object_get_ex(jsonData, "parkingSpace", &parkingSpaceArray) &&
-        json_object_object_get_ex(jsonData, "PathData", &pathArray))
+    char line[1024];
+    int currentSection = -1;
+    while (fgets(line, sizeof(line), jsonFile))
     {
+        if (strstr(line, "outline"))
+            currentSection = 0;
+        else if (strstr(line, "middleLine"))
+            currentSection = 1;
+        else if (strstr(line, "parkingSpace"))
+            currentSection = 2;
+        else if (strstr(line, "PathData"))
+            currentSection = 3;
 
-        header.OutlineDataCount = json_object_array_length(outlineArray);
-        header.MiddleLineDataCount = json_object_array_length(middleLineArray);
-        header.ParkingSpaceDataCount = json_object_array_length(parkingSpaceArray);
-        header.PathDataCount = json_object_array_length(pathArray);
-    }
-    else
-    {
-        printf("Failed to get data arrays from JSON.\n");
-        json_object_put(jsonData);
-        return -1;
+        if (currentSection == -1)
+            continue;
+
+        if (strstr(line, "{"))
+        {
+            if (currentSection == 0)
+                header.OutlineDataCount++;
+            else if (currentSection == 1)
+                header.MiddleLineDataCount++;
+            else if (currentSection == 2)
+                header.ParkingSpaceDataCount++;
+            else if (currentSection == 3)
+                header.PathDataCount++;
+        }
     }
 
-    // 바이너리 파일을 생성하고 헤더와 오프셋 정보를 기록
     file = fopen("MapData.bin", "wb");
     if (!file)
     {
         perror("Unable to create file");
-        json_object_put(jsonData);
+        fclose(jsonFile);
         return -1;
     }
 
@@ -116,165 +114,142 @@ int readAndProcessJSON(const char *jsonFileName)
     header.PathDataSize = header.PathDataCount * sizeof(PathData);
 
     header.TotalDataSize = sizeof(Header) + sizeof(Offset) + header.OutlineDataSize +
-    header.MiddleLineDataSize + header.ParkingSpaceDataSize + header.PathDataSize;
+                           header.MiddleLineDataSize + header.ParkingSpaceDataSize + header.PathDataSize;
 
     fwrite(&header, sizeof(Header), 1, file);
     fwrite(&offset, sizeof(Offset), 1, file);
 
-    // 외곽선 데이터를 읽어서 이진 파일에 기록
-    for (i = 0; i < header.OutlineDataCount; i++)
+    fseek(jsonFile, 0, SEEK_SET);
+    currentSection = -1;
+    Outline outline;
+    MiddleLine middleLine;
+    ParkingSpace parkingSpace;
+    PathData pathData;
+    char buffer[1024];
+    while (fgets(line, sizeof(line), jsonFile))
     {
-        outlineObj = json_object_array_get_idx(outlineArray, i);
-        Outline outline;
+        if (strstr(line, "outline"))
+            currentSection = 0;
+        else if (strstr(line, "middleLine"))
+            currentSection = 1;
+        else if (strstr(line, "parkingSpace"))
+            currentSection = 2;
+        else if (strstr(line, "PathData"))
+            currentSection = 3;
 
-        // JSON에서 필요한 데이터를 추출
-        if (json_object_object_get_ex(outlineObj, "StartVertex", &startVertex))
-        {
-            outline.StartVertex[0] = json_object_get_int(json_object_array_get_idx(startVertex, 0));
-            outline.StartVertex[1] = json_object_get_int(json_object_array_get_idx(startVertex, 1));
-        }
-        if (json_object_object_get_ex(outlineObj, "EndVertex", &endVertex))
-        {
-            outline.EndVertex[0] = json_object_get_int(json_object_array_get_idx(endVertex, 0));
-            outline.EndVertex[1] = json_object_get_int(json_object_array_get_idx(endVertex, 1));
-        }
-        fwrite(&outline, sizeof(Outline), 1, file);
-    }
+        if (currentSection == -1)
+            continue;
 
-    // 중간 선 데이터를 읽어서 이진 파일에 기록
-    for (i = 0; i < header.MiddleLineDataCount; i++)
-    {
-        middleLineObj = json_object_array_get_idx(middleLineArray, i);
-        MiddleLine middleLine;
-
-        if (json_object_object_get_ex(middleLineObj, "StartVertex", &startVertex))
+        if (strstr(line, "{"))
         {
-            middleLine.StartVertex[0] = json_object_get_int(json_object_array_get_idx(startVertex, 0));
-            middleLine.StartVertex[1] = json_object_get_int(json_object_array_get_idx(startVertex, 1));
-        }
-        if (json_object_object_get_ex(middleLineObj, "EndVertex", &endVertex))
-        {
-            middleLine.EndVertex[0] = json_object_get_int(json_object_array_get_idx(endVertex, 0));
-            middleLine.EndVertex[1] = json_object_get_int(json_object_array_get_idx(endVertex, 1));
-        }
-        fwrite(&middleLine, sizeof(MiddleLine), 1, file);
-    }
-
-    // 주차 공간 데이터를 읽어서 이진 파일에 기록
-    for (i = 0; i < header.ParkingSpaceDataCount; i++)
-    {
-        parkingSpaceObj = json_object_array_get_idx(parkingSpaceArray, i);
-        ParkingSpace parkingSpace;
-
-        if (json_object_object_get_ex(parkingSpaceObj, "ParkingSpaceID", &nodeID))
-        {
-            strncpy(parkingSpace.ParkingSpaceID, json_object_get_string(nodeID), 3);
-        }
-        if (json_object_object_get_ex(parkingSpaceObj, "BottomLeftVertex", &vertex))
-        {
-            parkingSpace.BottomLeftVertex[0] = json_object_get_int(json_object_array_get_idx(vertex, 0));
-            parkingSpace.BottomLeftVertex[1] = json_object_get_int(json_object_array_get_idx(vertex, 1));
-        }
-        if (json_object_object_get_ex(parkingSpaceObj, "BottomRightVertex", &vertex))
-        {
-            parkingSpace.BottomRightVertex[0] = json_object_get_int(json_object_array_get_idx(vertex, 0));
-            parkingSpace.BottomRightVertex[1] = json_object_get_int(json_object_array_get_idx(vertex, 1));
-        }
-        if (json_object_object_get_ex(parkingSpaceObj, "TopRightVertex", &vertex))
-        {
-            parkingSpace.TopRightVertex[0] = json_object_get_int(json_object_array_get_idx(vertex, 0));
-            parkingSpace.TopRightVertex[1] = json_object_get_int(json_object_array_get_idx(vertex, 1));
-        }
-        if (json_object_object_get_ex(parkingSpaceObj, "TopLeftVertex", &vertex))
-        {
-            parkingSpace.TopLeftVertex[0] = json_object_get_int(json_object_array_get_idx(vertex, 0));
-            parkingSpace.TopLeftVertex[1] = json_object_get_int(json_object_array_get_idx(vertex, 1));
+            memset(buffer, 0, sizeof(buffer));
+            if (currentSection == 0)
+                memset(&outline, 0, sizeof(Outline));
+            else if (currentSection == 1)
+                memset(&middleLine, 0, sizeof(MiddleLine));
+            else if (currentSection == 2)
+                memset(&parkingSpace, 0, sizeof(ParkingSpace));
+            else if (currentSection == 3)
+                memset(&pathData, 0, sizeof(PathData));
         }
 
-        // 주차 공간 ID에 따른 처리
-        int parkingSpaceID = atoi(parkingSpace.ParkingSpaceID);
-        // 21번과 22번 주차 공간에 대한 조건
-        if (parkingSpaceID == 21 || parkingSpaceID == 22)
+        if (currentSection == 0)
         {
-            // 21번과 22번 주차 공간 처리
-            if (json_object_object_get_ex(parkingSpaceObj, "IsHandicappedParkingSpace", &isHandicappedParkingSpace))
+            if (strstr(line, "StartVertex"))
             {
-                parkingSpace.IsHandicappedParkingSpace = json_object_get_boolean(isHandicappedParkingSpace);
+                sscanf(line, " \"StartVertex\" : [%d, %d],", &outline.StartVertex[0], &outline.StartVertex[1]);
             }
-            parkingSpace.IsParkingAvailable = true;
-        }
-        else
-        {
-            // 나머지 주차 공간 처리
-            if (json_object_object_get_ex(parkingSpaceObj, "IsParkingAvailable", &isParkingAvailable))
+            else if (strstr(line, "EndVertex"))
             {
-                parkingSpace.IsParkingAvailable = json_object_get_boolean(isParkingAvailable);
-            }
-            parkingSpace.IsHandicappedParkingSpace = false;
-        }
-        fwrite(&parkingSpace, sizeof(ParkingSpace), 1, file);
-    }
-
-    // 경로 데이터를 읽어서 이진 파일에 기록
-    for (int i = 0; i < header.PathDataCount; i++)
-    {
-        pathDataObj = json_object_array_get_idx(pathArray, i);
-        PathData pathData;
-
-        if (json_object_object_get_ex(pathDataObj, "NodeID", &nodeID))
-        {
-            strncpy(pathData.NodeID, json_object_get_string(nodeID), 4);
-        }
-        if (json_object_object_get_ex(pathDataObj, "StartVertex", &startVertex))
-        {
-            pathData.StartVertex[0] = json_object_get_int(json_object_array_get_idx(startVertex, 0));
-            pathData.StartVertex[1] = json_object_get_int(json_object_array_get_idx(startVertex, 1));
-        }
-        if (json_object_object_get_ex(pathDataObj, "NodeVertex", &nodeVertex))
-        {
-            pathData.NodeVertex[0] = json_object_get_int(json_object_array_get_idx(nodeVertex, 0));
-            pathData.NodeVertex[1] = json_object_get_int(json_object_array_get_idx(nodeVertex, 1));
-        }
-        if (json_object_object_get_ex(pathDataObj, "LinkedNodes", &linkedNodes))
-        {
-            for (int j = 0; j < 4; j++)
-            {
-                if (json_object_array_get_idx(linkedNodes, j))
-                {
-                    pathData.LinkedNodes[j] = json_object_get_int(json_object_array_get_idx(linkedNodes, j));
-                }
-                else
-                {
-                    pathData.LinkedNodes[j] = -1;
-                }
+                sscanf(line, " \"EndVertex\" : [%d, %d]", &outline.EndVertex[0], &outline.EndVertex[1]);
+                fwrite(&outline, sizeof(Outline), 1, file);
             }
         }
-        if (json_object_object_get_ex(pathDataObj, "LinkedIndex", &linkedIndex))
+        else if (currentSection == 1)
         {
-            for (int j = 0; j < 4; j++)
+            if (strstr(line, "StartVertex"))
             {
-                if (json_object_array_get_idx(linkedIndex, j))
-                {
-                    pathData.LinkedIndex[j] = json_object_get_int(json_object_array_get_idx(linkedIndex, j));
-                }
-                else
-                {
-                    pathData.LinkedIndex[j] = -1;
-                }
+                sscanf(line, " \"StartVertex\" : [%d, %d],", &middleLine.StartVertex[0], &middleLine.StartVertex[1]);
+            }
+            else if (strstr(line, "EndVertex"))
+            {
+                sscanf(line, " \"EndVertex\" : [%d, %d]", &middleLine.EndVertex[0], &middleLine.EndVertex[1]);
+                fwrite(&middleLine, sizeof(MiddleLine), 1, file);
             }
         }
-        fwrite(&pathData, sizeof(PathData), 1, file);
-    }
+        else if (currentSection == 2)
+        {
+            if (strstr(line, "ParkingSpaceID"))
+            {
+                sscanf(line, " \"ParkingSpaceID\" : \"%5[^\"]\",", parkingSpace.ParkingSpaceID);
+            }
+            else if (strstr(line, "BottomLeftVertex"))
+            {
+                sscanf(line, " \"BottomLeftVertex\" : [%d, %d],", &parkingSpace.BottomLeftVertex[0], &parkingSpace.BottomLeftVertex[1]);
+            }
+            else if (strstr(line, "BottomRightVertex"))
+            {
+                sscanf(line, " \"BottomRightVertex\" : [%d, %d],", &parkingSpace.BottomRightVertex[0], &parkingSpace.BottomRightVertex[1]);
+            }
+            else if (strstr(line, "TopRightVertex"))
+            {
+                sscanf(line, " \"TopRightVertex\" : [%d, %d],", &parkingSpace.TopRightVertex[0], &parkingSpace.TopRightVertex[1]);
+            }
+            else if (strstr(line, "TopLeftVertex"))
+            {
+                sscanf(line, " \"TopLeftVertex\" : [%d, %d],", &parkingSpace.TopLeftVertex[0], &parkingSpace.TopLeftVertex[1]);
+            }
+            else if (strstr(line, "IsParkingAvailable"))
+            {
+                sscanf(line, " \"IsParkingAvailable\" : \"%5[^\"]\",", buffer);
+                parkingSpace.IsParkingAvailable = (strcmp(buffer, "true") == 0);
+                fwrite(&parkingSpace, sizeof(ParkingSpace), 1, file);
+            }
+            else if (strstr(line, "IsHandicappedParkingSpace"))
+            {
+                sscanf(line, " \"IsHandicappedParkingSpace\" : \"%5[^\"]\",", buffer);
+                parkingSpace.IsHandicappedParkingSpace = (strcmp(buffer, "true") == 0);
+            }
+        }
 
-    // 파일 닫고 메모리 해제
+        else if (currentSection == 3)
+        {
+            if (strstr(line, "NodeID"))
+            {
+                sscanf(line, " \"NodeID\" : \"%4[^\"]\",", pathData.NodeID);
+            }
+            else if (strstr(line, "NodeVertex"))
+            {
+                sscanf(line, " \"NodeVertex\" : [%d, %d],", &pathData.NodeVertex[0], &pathData.NodeVertex[1]);
+            }
+            else if (strstr(line, "LinkedNodes"))
+            {
+                // LinkedNodes 값을 정수 배열로 읽어들임
+                sscanf(line, " \"LinkedNodes\" : [ \"%d\", \"%d\", \"%d\", \"%d\" ],",
+                       &pathData.LinkedNodes[0], &pathData.LinkedNodes[1],
+                       &pathData.LinkedNodes[2], &pathData.LinkedNodes[3]);
+            }
+            else if (strstr(line, "LinkedIndex"))
+            {
+                sscanf(line, " \"LinkedIndex\" : [%d, %d, %d, %d],", &pathData.LinkedIndex[0], &pathData.LinkedIndex[1], &pathData.LinkedIndex[2], &pathData.LinkedIndex[3]);
+                fwrite(&pathData, sizeof(PathData), 1, file);
+            }
+        }
+    }
     fclose(file);
-    json_object_put(jsonData);
+    fclose(jsonFile);
 
-    // return 0;
+    return 0;
 }
 
 int main()
 {
-    const char *jsonFileName = MAPDATA_PATH;
-    return readAndProcessJSON(jsonFileName);
+    const char *jsonFileName = MAP_DATA_JSON_PATH;
+
+    if (readAndProcessJSON(jsonFileName) == 0)
+    {
+        printf("JSON 파일을 성공적으로 처리하여 바이너리 파일로 변환했습니다.\n");
+    }
+
+    return 0;
 }

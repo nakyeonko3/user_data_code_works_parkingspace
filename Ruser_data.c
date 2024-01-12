@@ -3,7 +3,7 @@
 #include <string.h>
 
 // #define USER_DATA_BIN_PATH "/home/tjchoi/Project/UserData.bin" // 사용자 데이터 파일의 경로를 상수로 정의
-#define USER_DATA_BIN_PATH "./UserData.bin" // 사용자 데이터 파일의 경로를 상수로 정의
+#define USER_DATA_BIN_PATH "./UserData.bin"
 
 // 파일 구조와 데이터 구조체 정의
 typedef struct
@@ -54,12 +54,12 @@ void ReadUserData(const char *filename, int index, UserData *userData, ParkingSp
             .ParkingSpaceDataOffset = sizeof(Header) + ((index + 1) * sizeof(UserData)) + (index * sizeof(ParkingSpace))};
 
         fseek(file, offset.UserDataOffset, SEEK_SET); // 사용자 데이터 위치로 이동
-        fread(userData, sizeof(UserData), 1, file); // 사용자 데이터 읽기
+        fread(userData, sizeof(UserData), 1, file);   // 사용자 데이터 읽기
 
         userData->Name[sizeof(userData->Name) - 1] = '\0'; // 문자열 마지막에 NULL 추가
 
         fseek(file, offset.ParkingSpaceDataOffset, SEEK_SET); // 주차 공간 데이터 위치로 이동
-        fread(parkingSpace, sizeof(ParkingSpace), 1, file); // 주차 공간 데이터 읽기
+        fread(parkingSpace, sizeof(ParkingSpace), 1, file);   // 주차 공간 데이터 읽기
     }
 
     fclose(file); // 파일 닫기
@@ -111,33 +111,3 @@ int main()
 
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

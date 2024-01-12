@@ -4,16 +4,17 @@ from flask_cors import CORS
 import math
 import json
 import re
-CUSER_DATA_FILE_PATH = "./Cuser_data"
-# CUSER_DATA_FILE_PATH = "/home/tjchoi/Project/Cuser_data"
-
-RMAP_DATA_FILE_PATH = "./Rmap_data"
-# RMAP_DATA_FILE_PATH = "/home/tjchoi/Project/Rmap_data"
-
 
 app = Flask(__name__)
 app.json.ensure_ascii = False
 CORS(app)
+
+# RMAP_DATA_FILE_PATH = "/home/tjchoi/Project/Rmap_data"
+# CUSER_DATA_FILE_PATH = "/home/tjchoi/Project/Cuser_data"
+
+RMAP_DATA_FILE_PATH = "./Rmap_data"
+CUSER_DATA_FILE_PATH = "./Cuser_data"
+
 
 def search_user_by_carNumber(carNumber:int):
     # 1)차량 번호 검색
@@ -169,6 +170,7 @@ def get_json_data():
     try:
         map_data = subprocess.run([RMAP_DATA_FILE_PATH], capture_output=True, text=True, check=True)
         map_dict = json.loads(map_data.stdout)
+        # map_dict = map_data.stdout
         return jsonify(map_dict)
     except subprocess.CalledProcessError as get_json_error:
         return jsonify({"message": "map데이터 읽는중 서버 오류 발생", "error": delete_error.stderr}), 500
