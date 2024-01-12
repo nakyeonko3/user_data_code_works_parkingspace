@@ -140,10 +140,24 @@ int readBinaryData(const char *binFileName)
     {
         PathData pathData;
         fread(&pathData, sizeof(PathData), 1, file);
-        printf("NodeID: %s, NodeVertex: [%d, %d], LinkedNodes: [%d, %d, %d, %d], LinkedIndex: [",
+        printf("NodeID: %s, NodeVertex: [%d, %d], ",
                pathData.NodeID,
-               pathData.NodeVertex[0], pathData.NodeVertex[1],
-               pathData.LinkedNodes[0], pathData.LinkedNodes[1], pathData.LinkedNodes[2], pathData.LinkedNodes[3]);
+               pathData.NodeVertex[0], pathData.NodeVertex[1]);
+
+        printf("LinkedNodes: [");
+        for (int j = 0; j < 4; j++)
+        {
+            if (pathData.LinkedNodes[j] != 0) // 값이 0이 아닌 경우에만 출력
+            {
+                printf("%d", pathData.LinkedNodes[j]);
+                if (j < 3 && pathData.LinkedNodes[j + 1] != 0) // 다음 요소가 0이 아닐 경우에만 쉼표 출력
+                {
+                    printf(", ");
+                }
+            }
+        }
+        printf("], ");
+        printf("LinkedIndex: [");
         for (int j = 0; j < 4; j++)
         {
             if (pathData.LinkedIndex[j] != 0) // 값이 0이 아닌 경우에만 출력
