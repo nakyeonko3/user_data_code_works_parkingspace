@@ -68,7 +68,7 @@ bool is_valid_car_number(const char *carNumber)
 
     // 정규 표현식 컴파일
     retC = regcomp(&regex, CAR_NUMBER_PATTERN, REG_EXTENDED);
-    if (retC !=0)
+    if (retC != 0)
     {
         fprintf(stderr, "정규 표현식 컴파일 실패: 반환 코드 %d\n", retC);
         return false;
@@ -76,7 +76,8 @@ bool is_valid_car_number(const char *carNumber)
 
     // 정규 표현식 매칭
     retM = regexec(&regex, carNumber, 0, NULL, 0);
-    if (retM == 0) { 
+    if (retM == 0)
+    {
         return true; // 차량번호가 올바른 형식임
     }
 
@@ -88,7 +89,6 @@ bool is_valid_car_number(const char *carNumber)
 
     regfree(&regex);
 }
-
 
 // 사용자 데이터 검색 함수
 int search_data(const char *filename, const char *CarNumber, int *outParkingSpace)
@@ -108,7 +108,7 @@ int search_data(const char *filename, const char *CarNumber, int *outParkingSpac
     for (int i = 0; i < header.UserDataCount; ++i)
     {
         fseek(file, sizeof(header) + i * (sizeof(UserData) + sizeof(ParkingSpace)), SEEK_SET); // 오프셋 설정
-        fread(&userData, sizeof(UserData), 1, file); // 사용자 데이터 읽기
+        fread(&userData, sizeof(UserData), 1, file);                                           // 사용자 데이터 읽기
 
         // 차량 번호를 제공된 번호와 비교
         if (strcmp(userData.CarNumber, CarNumber) == 0)
@@ -158,7 +158,6 @@ void register_data(const char *filename, const char *Name, const char *CarType, 
 
     UserData userData;
 
-
     strncpy(userData.Name, Name, sizeof(userData.Name));
     strncpy(userData.CarType, CarType, sizeof(userData.CarType));
     strncpy(userData.CarNumber, CarNumber, sizeof(userData.CarNumber));
@@ -176,7 +175,6 @@ void register_data(const char *filename, const char *Name, const char *CarType, 
 
     fclose(file);
 }
-
 
 // 주차장 번호 업데이트 함수
 int UpdateParkingSpace(const char *filename, const char *CarNumber, const char *NewParkingSpaceStr)
@@ -297,7 +295,7 @@ int main(int argc, char *argv[])
         }
         printf("주차장 번호: %d\n", parkingSpaceInfo);
     }
-    
+
     if (flag == 2) // 등록
     {
         if (argc < 5)
@@ -340,5 +338,3 @@ int main(int argc, char *argv[])
     }
     return 0;
 }
-
-

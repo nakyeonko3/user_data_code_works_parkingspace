@@ -10,7 +10,6 @@ Content-Type: application/json; charset=UTF-8
 }
 
 ###
-
 POST http://localhost:5000//ParkingSpace HTTP/1.1
 Content-Type: application/json; charset=UTF-8
 

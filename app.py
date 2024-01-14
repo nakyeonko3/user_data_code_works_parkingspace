@@ -3,7 +3,7 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 import math
 import json
-import re
+from map_db import MAP_DB
 
 app = Flask(__name__)
 app.json.ensure_ascii = False
@@ -15,6 +15,7 @@ CORS(app)
 RMAP_DATA_FILE_PATH = "./Rmap_data"
 CUSER_DATA_FILE_PATH = "./Cuser_data"
 
+MAP_DB.load_from_mapdbtmpbin()
 
 def search_user_by_carNumber(carNumber:int):
     # 1)차량 번호 검색
@@ -117,6 +118,7 @@ def handle_parking_space():
     if not search_output:
         return jsonify({"message": f"등록되지 않은 차량번호'{Data['CarNumber']}'", "data": search_output}), 400
     
+    
     # 주차번호 등록
     try:
         pregister_result = subprocess.run(
@@ -125,6 +127,10 @@ def handle_parking_space():
                 text=True,
                 check=True
             )
+        
+        #map_db 안의 주자공간 정보를 업데이트함.
+        MAP_DB.update_IsParkingAvailable_False_by_parkingSpacesID(Data["ParkingSpace"])
+        
         return jsonify( {
             "message": f"주차번호 업데이트 성공, 차량번호: {Data['CarNumber']}, 주차공간: {Data['ParkingSpace']}"
         }), 200
@@ -133,7 +139,6 @@ def handle_parking_space():
     except Exception as e:
         return jsonify({"message": "서버 오류 발생", "error": str(e)}), 500
     
-
 
 @app.route("/TurnOff", methods=["POST"])
 def handle_turn_off():
@@ -167,16 +172,8 @@ def get_json_data():
     if EventID != "3": # "EventID"가 "3"이 아닐 경우 
         return jsonify({"message":"올바르지 않은 EventID입니다."})
 
-    try:
-        map_data = subprocess.run([RMAP_DATA_FILE_PATH], capture_output=True, text=True, check=True)
-        map_dict = json.loads(map_data.stdout)
-        # map_dict = map_data.stdout
-        return jsonify(map_dict)
-    except subprocess.CalledProcessError as get_json_error:
-        return jsonify({"message": "map데이터 읽는중 서버 오류 발생", "error": delete_error.stderr}), 500
-    except Exception as e:
-        return jsonify({"message": "서버 오류 발생", "error": str(e)}), 500
-        
+    return jsonify(MAP_DB.map_db)
+
 
 # 메인 실행 부분
 if __name__ == "__main__":
