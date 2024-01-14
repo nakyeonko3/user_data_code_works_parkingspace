@@ -293,7 +293,8 @@ int main(int argc, char *argv[])
             fprintf(stderr, "DB 안에 해당 차량 번호가 존재 하지 않음: %s\n", CarNumberToSearch);
             return 0;
         }
-        printf("주차장 번호: %d\n", parkingSpaceInfo);
+        // 추가됨
+        printf("%d\n", parkingSpaceInfo);
     }
 
     if (flag == 2) // 등록

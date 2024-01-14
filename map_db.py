@@ -41,6 +41,14 @@ class MAP_DB():
         MAP_DB.store_map_db_in_mapdbtmpbin()
  
     @staticmethod
+    def update_IsParkingAvailable_True_by_parkingSpacesID(id: int):
+        """
+        맵데이터 안의 해당 ID값을 IsParkingAvailable를 true 로 만든다.
+        """
+        MAP_DB.map_db['parkingSpaces'][id-1]['IsParkingAvailable'] = True
+        MAP_DB.store_map_db_in_mapdbtmpbin()
+ 
+    @staticmethod
     def update_IsParkingAvailable_all_True():
         """
         맵데이터 안의 전체를 IsParkingAvailable를 true 로 만든다.
