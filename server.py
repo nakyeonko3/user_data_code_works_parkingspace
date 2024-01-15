@@ -103,7 +103,7 @@ def handle_parking_space():
                     }
                     
                     #추가됨
-                    MAP_DB.update_IsParkingAvailable_False_by_parkingSpacesID(Data["ParkingSpace"])
+                    MAP_DB.update_IsParkingAvailable_False_by_parkingSpacesID(int(Data["ParkingSpace"]))
                     return jsonify(response_data), 200
                 else:
                     return jsonify({"message": "주차장 번호 업데이트 실패"}), 500
@@ -159,4 +159,4 @@ def get_json_data():
 
 # 메인 실행 부분
 if __name__ == "__main__":
-    app.run(host="0.0.0.0")  # Flask 애플리케이션을 실행하고 외부에서 접속 가능하도록 함
+    app.run(host="0.0.0.0", debug=True)  # Flask 애플리케이션을 실행하고 외부에서 접속 가능하도록 함
