@@ -9,7 +9,7 @@ MAP_DB_TEMP = "./mapdbtmp.bin"
 class MAP_DB():    
     map_db = {}
     # map_db는 맵 데이터들이 저장된 dict 타입 변수임.
-    # map_db 안에 'outline', 'middleLine', 'parkingSpaces', 'PathData' 가 있다.
+    # map_db 안에 'outline', 'middleLine', 'parkingSpace', 'PathData' 가 있다.
     RMAP_DATA = RMAP_DATA
     MAP_DB_TEMP = MAP_DB_TEMP
     
@@ -33,19 +33,19 @@ class MAP_DB():
         
 
     @staticmethod
-    def update_IsParkingAvailable_False_by_parkingSpacesID(id: int):
+    def update_IsParkingAvailable_False_by_parkingSpaceID(id: int):
         """
         맵데이터 안의 해당 ID값을 IsParkingAvailable를 false로 만든다.
         """
-        MAP_DB.map_db['parkingSpaces'][id-1]['IsParkingAvailable'] = False
+        MAP_DB.map_db['parkingSpace'][id-1]['IsParkingAvailable'] = False
         MAP_DB.store_map_db_in_mapdbtmpbin()
  
     @staticmethod
-    def update_IsParkingAvailable_True_by_parkingSpacesID(id: int):
+    def update_IsParkingAvailable_True_by_ParkingSpaceID(id: int):
         """
         맵데이터 안의 해당 ID값을 IsParkingAvailable를 true 로 만든다.
         """
-        MAP_DB.map_db['parkingSpaces'][id-1]['IsParkingAvailable'] = True
+        MAP_DB.map_db['parkingSpace'][id-1]['IsParkingAvailable'] = True
         MAP_DB.store_map_db_in_mapdbtmpbin()
  
     @staticmethod
@@ -53,8 +53,8 @@ class MAP_DB():
         """
         맵데이터 안의 전체를 IsParkingAvailable를 true 로 만든다.
         """
-        for parkingSpacesElement in MAP_DB.map_db['parkingSpaces']:
-            parkingSpacesElement['IsParkingAvailable'] = True
+        for ParkingSpaceID in MAP_DB.map_db['parkingSpace']:
+            ParkingSpaceID['IsParkingAvailable'] = True
         MAP_DB.store_map_db_in_mapdbtmpbin()
  
     @staticmethod
@@ -77,7 +77,7 @@ class MAP_DB():
             dbfile = open(MAP_DB_TEMP, 'rb')
         except FileNotFoundError:
             print(f"create new {MAP_DB_TEMP}")
-            dbfile = open(MAP_DB_TEMP, 'ab')
+            dbfile = open(MAP_DB_TEMP, 'wb')
             dbfile.close()
         except Exception as load_mapdata_error:
             print(f"load_mapdata error raised, when mapdbtmp.bin file open:{load_mapdata_error}") 
@@ -99,11 +99,9 @@ class MAP_DB():
 
 if __name__ == "__main__":
     MAP_DB.load_from_mapdbtmpbin()
-    MAP_DB.update_IsParkingAvailable_False_by_parkingSpacesID(22)
-    MAP_DB.update_IsParkingAvailable_False_by_parkingSpacesID(21)
-    MAP_DB.update_IsParkingAvailable_False_by_parkingSpacesID(20)
-    MAP_DB.update_IsParkingAvailable_all_True()
-    pprint(MAP_DB.map_db, indent=4)
+    MAP_DB.update_IsParkingAvailable_False_by_parkingSpaceID(22)
+    MAP_DB.update_IsParkingAvailable_False_by_parkingSpaceID(21)
+    pprint(MAP_DB.get_all(), indent=4)
 
     
     

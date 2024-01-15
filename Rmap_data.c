@@ -167,10 +167,10 @@ json_object *convertToJSON(FILE *file, Header header)
     }
 
     // JSON 객체에 배열 추가
-    json_object_object_add(jRoot, "outlines", jOutlines);           // 윤곽선 배열 추가
-    json_object_object_add(jRoot, "middleLines", jMiddleLines);     // 중앙선 배열 추가
-    json_object_object_add(jRoot, "parkingSpaces", jParkingSpaces); // 주차 공간 배열 추가
-    json_object_object_add(jRoot, "pathData", jPathData);           // 경로 데이터 배열 추가
+    // json_object_object_add(jRoot, "outline", jOutlines);           // 윤곽선 배열 추가
+    // json_object_object_add(jRoot, "middleLine", jMiddleLines);     // 중앙선 배열 추가
+    json_object_object_add(jRoot, "parkingSpace", jParkingSpaces); // 주차 공간 배열 추가
+    // json_object_object_add(jRoot, "pathData", jPathData);          // 경로 데이터 배열 추가
     return jRoot;
 }
 

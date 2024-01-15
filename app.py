@@ -129,7 +129,7 @@ def handle_parking_space():
             )
         
         #map_db 안의 주자공간 정보를 업데이트함.
-        MAP_DB.update_IsParkingAvailable_False_by_parkingSpacesID(int(Data["ParkingSpace"]))
+        MAP_DB.update_IsParkingAvailable_False_by_parkingSpaceID(int(Data["ParkingSpace"]))
         
         return jsonify( {
             "message": f"주차번호 업데이트 성공, 차량번호: {Data['CarNumber']}, 주차공간: {Data['ParkingSpace']}"

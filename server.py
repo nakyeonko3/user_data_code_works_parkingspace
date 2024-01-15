@@ -103,7 +103,7 @@ def handle_parking_space():
                     }
                     
                     #추가됨
-                    MAP_DB.update_IsParkingAvailable_False_by_parkingSpacesID(int(Data["ParkingSpace"]))
+                    MAP_DB.update_IsParkingAvailable_False_by_parkingSpaceID(int(Data["ParkingSpace"]))
                     return jsonify(response_data), 200
                 else:
                     return jsonify({"message": "주차장 번호 업데이트 실패"}), 500
@@ -125,7 +125,7 @@ def handle_turn_off():
             # 추가됨
             parkingspaceID = get_parkingspaceID_by_carNumber(Data["CarNumber"])
             print(parkingspaceID)
-            MAP_DB.update_IsParkingAvailable_True_by_parkingSpacesID(int(parkingspaceID))
+            MAP_DB.update_IsParkingAvailable_True_by_ParkingSpaceID(int(parkingspaceID))
             if "CarNumber" in Data:
                 # C 언어 프로그램을 호출하여 해당 차량번호 데이터 삭제
                 delete_result = subprocess.run(
