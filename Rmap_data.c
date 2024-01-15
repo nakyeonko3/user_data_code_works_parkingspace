@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #define VERTEX_SIZE 2
 
+#define MAP_DATA_BIN "./MapData.bin"
+
 // 파일의 메타데이터를 저장하는 구조체
 typedef struct
 {
@@ -167,10 +169,10 @@ json_object *convertToJSON(FILE *file, Header header)
     }
 
     // JSON 객체에 배열 추가
-    // json_object_object_add(jRoot, "outline", jOutlines);           // 윤곽선 배열 추가
-    // json_object_object_add(jRoot, "middleLine", jMiddleLines);     // 중앙선 배열 추가
+    json_object_object_add(jRoot, "outline", jOutlines);           // 윤곽선 배열 추가
+    json_object_object_add(jRoot, "middleLine", jMiddleLines);     // 중앙선 배열 추가
     json_object_object_add(jRoot, "parkingSpace", jParkingSpaces); // 주차 공간 배열 추가
-    // json_object_object_add(jRoot, "pathData", jPathData);          // 경로 데이터 배열 추가
+    json_object_object_add(jRoot, "pathData", jPathData);          // 경로 데이터 배열 추가
     return jRoot;
 }
 
@@ -201,7 +203,7 @@ json_object *readBinaryFile(const char *filename)
 // 메인 함수
 int main()
 {
-    const char *binaryFileName = "MapData.bin";          // 바이너리 파일 이름
+    const char *binaryFileName = MAP_DATA_BIN;           // 바이너리 파일 이름
     json_object *jData = readBinaryFile(binaryFileName); // 바이너리 파일 읽기 및 JSON 변환
 
     if (jData != NULL)

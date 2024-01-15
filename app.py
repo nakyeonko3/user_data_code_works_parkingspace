@@ -17,7 +17,7 @@ CUSER_DATA_FILE_PATH = "./Cuser_data"
 
 MAP_DB.load_from_mapdbtmpbin()
 
-def search_user_by_carNumber(carNumber:int):
+def search_user_by_carNumber(carNumber:str) -> int:
     # 1)차량 번호 검색
     try:
         search_result = subprocess.run(
@@ -27,7 +27,7 @@ def search_user_by_carNumber(carNumber:int):
         check=True 
         )
         search_output = search_result.stdout.strip()
-        return search_output
+        return int(search_output)
     except subprocess.CalledProcessError as search_error:     # retruncode가 0이 아닐시, 에러 메시지 전송
         print(f"차량 번호 검색중 서버 오류 발생 returncode not 1, error: {search_error.stderr}")
         return 1
@@ -149,6 +149,10 @@ def handle_turn_off():
         return jsonify({"message": "올바르지 않은 EventID입니다."}), 400
     if "CarNumber" not in Data:
         return jsonify({"message": "차량번호(CarNumbe)가 입력되지 않았습니다.", "error": str(e)}), 500
+    
+    parkingspaceID = search_user_by_carNumber(Data["CarNumber"])
+    MAP_DB.update_IsParkingAvailable_True_by_ParkingSpaceID(parkingspaceID)
+    
     try:
         # C 언어 프로그램을 호출하여 해당 차량번호 데이터 삭제
         delete_result = subprocess.run(
