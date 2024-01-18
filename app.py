@@ -17,7 +17,7 @@ CUSER_DATA_FILE_PATH = "./Cuser_data"
 
 MAP_DB.load_from_mapdbtmpbin()
 
-def search_user_by_carNumber(carNumber:str) -> int:
+def get_user_parkingspaceID_by_carNumber(carNumber:str):
     # 1)차량 번호 검색
     try:
         search_result = subprocess.run(
@@ -27,7 +27,8 @@ def search_user_by_carNumber(carNumber:str) -> int:
         check=True 
         )
         search_output = search_result.stdout.strip()
-        return int(search_output)
+
+        return search_output
     except subprocess.CalledProcessError as search_error:     # retruncode가 0이 아닐시, 에러 메시지 전송
         print(f"차량 번호 검색중 서버 오류 발생 returncode not 1, error: {search_error.stderr}")
         return 1
@@ -60,10 +61,10 @@ def handle_user():
     # 등록되어 있지 않다면, 3)유저 데이터 등록
 
     # 1)차량 번호 검색
-    search_output = search_user_by_carNumber(Data["CarNumber"])
+    search_output = get_user_parkingspaceID_by_carNumber(Data["CarNumber"])
     # 차량 번호 검색 중 에러 발생
     if search_output == 1: 
-        return jsonify({"message": "서버 오류 발생", "data": search_output})
+        return jsonify({"message": "서버 오류 발생 search_output == 1", "data": search_output})
     # 2)검색 결과를 전송
     if search_output: 
         return jsonify({"message": "검색 결과 출력", "data": search_output}), 200 
@@ -108,7 +109,7 @@ def handle_parking_space():
         return jsonify({"message": "주차장이 가득 찼습니다. 더 이상 주차할 수 없습니다."}), 400
 
     # 차량 번호 검색
-    search_output = search_user_by_carNumber(Data["CarNumber"])
+    search_output = get_user_parkingspaceID_by_carNumber(Data["CarNumber"])
     
     # 차량 번호 검색 중 에러 발생
     if search_output == 1:
@@ -150,8 +151,8 @@ def handle_turn_off():
     if "CarNumber" not in Data:
         return jsonify({"message": "차량번호(CarNumbe)가 입력되지 않았습니다.", "error": str(e)}), 500
     
-    parkingspaceID = search_user_by_carNumber(Data["CarNumber"])
-    MAP_DB.update_IsParkingAvailable_True_by_ParkingSpaceID(parkingspaceID)
+    parkingspaceID = get_user_parkingspaceID_by_carNumber(Data["CarNumber"])
+    MAP_DB.update_IsParkingAvailable_True_by_ParkingSpaceID(int(parkingspaceID))
     
     try:
         # C 언어 프로그램을 호출하여 해당 차량번호 데이터 삭제
