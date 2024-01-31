@@ -1,37 +1,103 @@
-###
+### 유저 등록1
 POST http://localhost:5000//UserInfo HTTP/1.1
 Content-Type: application/json; charset=UTF-8
 
 {
     "EventID":"1",
     "Name":"김나성",
-    "CarType":"value2", 
-    "CarNumber":"15누-8762"
+    "CarType":"테슬라", 
+    "CarNumber":"25김7621"
 }
 
-###
+### 유저 주차공간 등록1
 POST http://localhost:5000//ParkingSpace HTTP/1.1
 Content-Type: application/json; charset=UTF-8
 
 {
     "EventID":"2",
-    "ParkingSpace":2, 
-    "CarNumber":"15누-8762"
+    "ParkingSpace":1, 
+    "CarNumber":"25김7621"
 }
 
-###
+### 유저 등록 삭제, 유저 주차 공간 삭제
 POST http://localhost:5000//TurnOff HTTP/1.1
 Content-Type: application/json; charset=UTF-8
 
 {
     "EventID":"4",
-    "CarNumber":"15누-8762"
+    "CarNumber":"15다-8762"
 }
 
-###
+### 맵 데이터 출력
 GET http://localhost:5000//get-json-data
     ?EventID=3
 Content-Type: application/json; charset=UTF-8
 ###
 
 
+
+
+### 유저 등록2
+POST http://localhost:5000//UserInfo HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "EventID":"1",
+    "Name":"고낙연",
+    "CarType":"val3", 
+    "CarNumber":"15카-8762"
+}
+
+### 유저 주차공간 등록2
+POST http://localhost:5000//ParkingSpace HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "EventID":"2",
+    "ParkingSpace":3, 
+    "CarNumber":"15카-8762"
+}
+
+
+### 유저 등록3
+POST http://localhost:5000//UserInfo HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "EventID":"1",
+    "Name":"김낙연",
+    "CarType":"val3", 
+    "CarNumber":"15다-8762"
+}
+
+### 유저 주차공간 등록4
+POST http://localhost:5000//ParkingSpace HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "EventID":"2",
+    "ParkingSpace":4, 
+    "CarNumber":"15다-8762"
+}
+
+
+### 유저 등록5
+POST http://localhost:5000//UserInfo HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "EventID":"1",
+    "Name":"심낙연",
+    "CarType":"val3", 
+    "CarNumber":"15바-8762"
+}
+
+### 유저 주차공간 등록3
+POST http://localhost:5000//ParkingSpace HTTP/1.1
+Content-Type: application/json; charset=UTF-8
+
+{
+    "EventID":"2",
+    "ParkingSpace":5, 
+    "CarNumber":"15다-8762"
+}

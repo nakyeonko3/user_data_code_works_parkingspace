@@ -1,9 +1,8 @@
 import subprocess
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import math
-import json
-from map_db import MAP_DB
+from map_db_0118 import MAP_DB
+import re
 
 app = Flask(__name__)
 app.json.ensure_ascii = False
@@ -17,25 +16,23 @@ CUSER_DATA_FILE_PATH = "./Cuser_data"
 
 MAP_DB.load_from_mapdbtmpbin()
 
-def get_user_parkingspaceID_by_carNumber(carNumber:str):
-    # 1)차량 번호 검색
+def search_user_by_carNumber(carNumber:int):
     try:
         search_result = subprocess.run(
-        [CUSER_DATA_FILE_PATH, "1", carNumber],
-        capture_output=True,
-        text=True,
-        check=True 
+            [CUSER_DATA_FILE_PATH, "1", carNumber],
+            capture_output=True,
+            text=True,
+            check=True 
         )
+        print(search_result)
         search_output = search_result.stdout.strip()
-
         return search_output
-    except subprocess.CalledProcessError as search_error:     # retruncode가 0이 아닐시, 에러 메시지 전송
-        print(f"차량 번호 검색중 서버 오류 발생 returncode not 0, error: {search_error.stderr}")
-        return 1
+    except subprocess.CalledProcessError as search_error:     
+        print(f"차량 번호 검색 중 서버 오류 발생 returncode not 1, error: {search_error.stderr}")
+        return None  # 서버 오류 시 None을 반환합니다.
     except Exception as e:
         print(f"서버 오류 발생 error {str(e)}")
-        return 1
-
+        return None  # 서버 오류 시 None을 반환합니다.
 
 @app.route("/UserInfo", methods=["POST"])
 def handle_user():
@@ -52,39 +49,54 @@ def handle_user():
         if field not in Data:
             return jsonify({"message": f"{field}가 입력되지 않았습니다."}), 400
     
-    # 허용 문자(숫자, 한글, 영어)외의 적절치 않은 문자열(!@#$%^*) 입력시 에러 메시지 전송 .
-    if not Data["CarType"].isalnum() or not Data["Name"].isalnum():
-        return jsonify({"message": "이름(Name) 또는 차종(CarType)에 적절치 않은 문자열(!-#%&*)를 입력하지 마시오"}), 400
-    
-    # 먼저 1)차량번호를 검색함 
-    # 차량 번호가 이미 등록되어 있다면, 2)검색 결과를 전송
-    # 등록되어 있지 않다면, 3)유저 데이터 등록
+    # 이름이 2, 3, 4 글자의 한글인지 확인하고, 올바른 형식인지 검사
+    if not re.match(r'^[가-힣]{2,4}$', Data["Name"]):
+        name_error = {"message": "올바른 이름 형식이 아닙니다."}
+    else:
+        name_error = None
 
-    # 1)차량 번호 검색
-    search_output = get_user_parkingspaceID_by_carNumber(Data["CarNumber"])
-    # 차량 번호 검색 중 에러 발생
-    if search_output == 1: 
-        return jsonify({"message": "서버 오류 발생 search_output == 1", "data": search_output})
-    # 2)검색 결과를 전송
-    if search_output: 
-        return jsonify({"message": "검색 결과 출력", "data": search_output}), 200 
-    # 3)유저 데이터 등록 
+    # 차종이 10글자 이하의 한글인지 확인하고, 올바른 형식인지 검사
+    if not re.match(r'^[가-힣]{1,10}$', Data["CarType"]):
+        car_type_error = {"message": "올바른 차종 형식이 아닙니다."}
+    else:
+        car_type_error = None
+
+    # 오류가 있을 경우 오류 메시지 반환
+    if name_error and car_type_error:
+        return jsonify({"name_error": name_error, "car_type_error": car_type_error}), 400
+    elif name_error:
+        return jsonify({"name_error": name_error}), 400
+    elif car_type_error:
+        return jsonify({"car_type_error": car_type_error}), 400
+
+    # 차량 번호 검색
+    search_output = search_user_by_carNumber(Data["CarNumber"])
+    print("asd", search_output)
+    # 서버 오류가 발생한 경우
+    if search_output is None: 
+        return jsonify({"message": "서버 오류 발생"}), 500
+
+    # 검색 결과를 전송
+    if search_output:
+        parking_space_number = int(search_output)
+        return jsonify({"message": "검색 결과 출력", "data": {"parkingSpace": parking_space_number}}), 200 
+    print("qwezxcc", search_output)
+    
+    # 유저 데이터 등록 
     try:
         subprocess.run(
-        [CUSER_DATA_FILE_PATH, "2", Data["CarNumber"], Data["Name"], Data["CarType"]],
-        capture_output=True,
-        text=True,
-        check=True
-    )
+            [CUSER_DATA_FILE_PATH, "2", Data["CarNumber"], Data["Name"], Data["CarType"]],
+            capture_output=True,
+            text=True,
+            check=True
+        )
         return jsonify({
-            "message": f" 데이터 등록 완료: Name: {Data['Name']}, CarType: {Data['CarType']}, CarNumber: {Data['CarNumber']}"
+            "message": f"데이터 등록 완료: Name: {Data['Name']}, CarType: {Data['CarType']}, CarNumber: {Data['CarNumber']}"
         }), 200
-    except subprocess.CalledProcessError as search_error:    # retruncode가 0이 아닐시, 에러 메시지 전송
+    except subprocess.CalledProcessError as search_error:    
         return jsonify({"message": "차량 번호 검색중 서버 오류 발생", "error": search_error.stderr}), 500
     except Exception as e:
         return jsonify({"message": "유저 데이터 등록 시도중 서버 오류 발생", "error": str(e)}), 500
-
-
 
 @app.route("/ParkingSpace", methods=["POST"])
 def handle_parking_space():
@@ -99,47 +111,46 @@ def handle_parking_space():
     for field in required_fields:
         if field not in Data:
             return jsonify({"message": f"{field}가 입력되지 않았습니다."}), 400
-    
-    # 허용된 문자(숫자, 한글, 영어)외의 적절치 않은 문자열(!@#$%^*) 입력시 에러 메시지 전송 
-    if math.isnan( Data["ParkingSpace"]):
-        return jsonify({"message": "적절치 않은 문자열(!-#%&*)를 입력하지 마시오"}), 400
-    
+          
     # 주차 가능한 공간이 22대로 제한된 경우
     if int(Data["ParkingSpace"]) > 22:  
         return jsonify({"message": "주차장이 가득 찼습니다. 더 이상 주차할 수 없습니다."}), 400
 
     # 차량 번호 검색
-    search_output = get_user_parkingspaceID_by_carNumber(Data["CarNumber"])
+    search_output = search_user_by_carNumber(Data["CarNumber"])
     
-    # 차량 번호 검색 중 에러 발생
-    if search_output == 1:
-        return jsonify({"message": "서버 오류 발생", "data": search_output}), 500
+    # 서버 오류가 발생한 경우
+    if search_output is None:
+        return jsonify({"message": "서버 오류 발생"}), 500
     
     # 등록되지 않은 유저의 주차번호를 업데이트하려고 했을 경우, 에러 메시지 전송
     if not search_output:
-        return jsonify({"message": f"등록되지 않은 차량번호'{Data['CarNumber']}'", "data": search_output}), 400
+        return jsonify({"message": f"등록되지 않은 차량번호 '{Data['CarNumber']}'입니다.", "data": search_output}), 400
     
+    # 이미 다른 사용자가 해당 주차 공간을 사용 중이면 에러 메시지 전송
+    if not MAP_DB.map_db['parkingSpace'][int(Data["ParkingSpace"]) - 1]['IsParkingAvailable']:
+        return jsonify({"message": f"주차공간 {Data['ParkingSpace']}은 이미 다른 사용자가 사용 중입니다."}), 400
     
-    # 주차번호 등록
+    # 주차번호 등록 및 예약 상태 업데이트
     try:
+        # 주차번호 업데이트 시 carNumber 인자를 전달
+        MAP_DB.update_IsParkingAvailable_False_by_parkingSpaceID(int(Data["ParkingSpace"]), Data["CarNumber"])
+        
         pregister_result = subprocess.run(
-                [CUSER_DATA_FILE_PATH, "3", Data["CarNumber"], str(Data["ParkingSpace"])],
-                capture_output=True,
-                text=True,
-                check=True
-            )
-        
-        #map_db 안의 주자공간 정보를 업데이트함.
-        MAP_DB.update_IsParkingAvailable_False_by_parkingSpaceID(int(Data["ParkingSpace"]))
-        
+            [CUSER_DATA_FILE_PATH, "3", Data["CarNumber"], str(Data["ParkingSpace"])],
+            capture_output=True,
+            text=True,
+            check=True
+        )
+
         return jsonify( {
             "message": f"주차번호 업데이트 성공, 차량번호: {Data['CarNumber']}, 주차공간: {Data['ParkingSpace']}"
         }), 200
-    except subprocess.CalledProcessError as pregister_error:     # retruncode가 0이 아닐시에도, 에러 메시지 전송
+    except subprocess.CalledProcessError as pregister_error:
         return jsonify({"message": "주차번호 업데이트 중 서버 오류 발생", "error": pregister_error.stderr}), 500
     except Exception as e:
         return jsonify({"message": "서버 오류 발생", "error": str(e)}), 500
-    
+
 
 @app.route("/TurnOff", methods=["POST"])
 def handle_turn_off():
@@ -149,9 +160,16 @@ def handle_turn_off():
     if EventID != "4":
         return jsonify({"message": "올바르지 않은 EventID입니다."}), 400
     if "CarNumber" not in Data:
-        return jsonify({"message": "차량번호(CarNumbe)가 입력되지 않았습니다.", "error": str(e)}), 500
+        return jsonify({"message": "차량번호(CarNumbe)가 입력되지 않았습니다."}), 400
     
-    parkingspaceID = get_user_parkingspaceID_by_carNumber(Data["CarNumber"])
+    parkingspaceID = search_user_by_carNumber(Data["CarNumber"])
+    
+    if parkingspaceID is None:
+        return jsonify({"message": "차량번호 검색 중 서버 오류 발생"}), 500
+    
+    if not parkingspaceID.isdigit():
+        return jsonify({"message": "해당하는 차량번호 데이터가 없습니다."}), 400
+
     MAP_DB.update_IsParkingAvailable_True_by_ParkingSpaceID(int(parkingspaceID))
     
     try:
@@ -164,22 +182,20 @@ def handle_turn_off():
         )
         return jsonify({"message": f"차량번호 {Data['CarNumber']}에 해당하는 데이터 삭제 성공"}), 200
     except subprocess.CalledProcessError as delete_error:     # retruncode가 0이 아닐시에도, 에러 메시지 전송
-        return jsonify({"message": "삭제중 서버 오류 발생, retruncode not 0", "error": delete_error.stderr}), 500
+        return jsonify({"message": "데이터 삭제 중 서버 오류 발생", "error": delete_error.stderr}), 500
     except Exception as e:
         return jsonify({"message": "데이터 삭제 중 서버 오류 발생", "error": str(e)}), 500
-
 
 # "/get-json-data" 엔드포인트에 대한 GET 메소드 핸들러 함수 정의
 @app.route("/get-json-data", methods=["GET"])
 def get_json_data():
     EventID = request.args.get("EventID")  # "EventID" 쿼리 매개변수 값을 가져옴
-     
+
     if EventID != "3": # "EventID"가 "3"이 아닐 경우 
         return jsonify({"message":"올바르지 않은 EventID입니다."})
 
     return jsonify(MAP_DB.map_db)
 
-
 # 메인 실행 부분
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", debug=True)  # Flask 애플리케이션을 실행하고 외부에서 접속 가능하도록 함
+    app.run(host="0.0.0.0")  # Flask 애플리케이션을 실행하고 외부에서 접속 가능하도록 함
